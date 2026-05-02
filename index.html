@@ -3,45 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABU EBA - HKO Planer 2030</title>
+    <title>ABU EBA - HKO Planer 2030 V2</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root {
             --primary: #0056b3;
             --secondary: #f8f9fa;
-            --accent: #e9ecef;
-            --success: #28a745;
         }
-        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #f4f7f6; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
-        .theme-select { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-bottom: 30px; }
-        button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; font-size: 0.9em; }
-        .btn-theme { background: var(--secondary); border: 1px solid #ddd; text-align: left; }
-        .btn-theme:hover { background: var(--accent); }
-        .btn-theme.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .btn-main { background: var(--primary); color: white; font-weight: bold; padding: 12px 20px; }
-        .content-page { display: none; border-top: 2px dashed #ccc; padding-top: 20px; margin-top: 20px; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .box { background: #e7f3ff; border-left: 5px solid var(--primary); padding: 15px; margin: 15px 0; border-radius: 0 5px 5px 0; }
-        .feedback-box { background: #fff3cd; border-left: 5px solid #ffc107; padding: 15px; display: none; margin-top: 10px; }
-        textarea { width: 100%; height: 100px; margin-top: 10px; padding: 12px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; }
-        .sprachmodi-list { font-style: italic; color: #555; background: #f9f9f9; padding: 10px; border-radius: 5px; }
-        .footer-btns { margin-top: 30px; display: flex; gap: 10px; }
-        h3 { color: #333; margin-top: 25px; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #eef2f3; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: background-color 0.5s ease; }
+        
+        h1 { color: #333; border-bottom: 3px solid #eee; padding-bottom: 10px; text-align: center; }
+        
+        /* Themen-Buttons Grid */
+        .theme-select { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 30px; }
+        .btn-theme { padding: 12px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: 600; color: white; opacity: 0.85; text-align: left; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-theme:hover { opacity: 1; transform: translateY(-2px); }
+        .btn-theme.active { opacity: 1; outline: 3px solid #333; transform: scale(1.02); }
+
+        /* Formular-Bereich */
+        .content-page { display: none; padding: 25px; border-radius: 10px; margin-top: 20px; animation: slideIn 0.4s ease-out; background: white; border: 2px solid #ddd; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .box { background: rgba(255,255,255,0.9); border-left: 5px solid #333; padding: 15px; margin: 15px 0; border-radius: 4px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); }
+        
+        /* HKO Check Styling */
+        .hko-check-container { display: flex; align-items: center; gap: 15px; margin: 20px 0 10px 0; }
+        .btn-check { background: #333; color: white; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-check:hover { background: #555; }
+        .check-explanation { font-size: 0.85em; color: #666; line-height: 1.3; max-width: 600px; }
+        
+        .feedback-box { background: #fff3cd; border-left: 5px solid #ffc107; padding: 15px; display: none; margin-top: 15px; border-radius: 4px; }
+        
+        textarea { width: 100%; height: 110px; margin-top: 10px; padding: 12px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1em; }
+        .sprachmodi-list { font-style: italic; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 6px; }
+        
+        .footer-btns { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        .btn-pdf { background: #d32f2f; color: white; padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="main-container">
     <h1>ABU EBA Lektionsplaner (HKO 2030)</h1>
-    <p>Wählen Sie ein Thema aus dem Schullehrplan Kanton Zürich aus:</p>
+    <p style="text-align: center;">Wählen Sie ein Thema aus dem Schullehrplan:</p>
     
-    <div class="theme-select" id="theme-buttons">
-        </div>
+    <div class="theme-select" id="theme-buttons"></div>
 
     <div id="theme-content" class="content-page">
-        <h2 id="display-title">Thema</h2>
+        <h2 id="display-title"></h2>
         
         <h3>Leitidee</h3>
         <p id="display-leitidee"></p>
@@ -52,11 +62,17 @@
         </div>
 
         <h3>Eigene Problemstellung formulieren</h3>
-        <p><small>Tipp laut HKO: Realitätsnah, aus der ICH-Perspektive und ergebnisoffen.</small></p>
-        <textarea id="user-problem" placeholder="Schreiben Sie hier Ihre Problemstellung..." oninput="checkProblem()"></textarea>
+        <textarea id="user-problem" placeholder="Beschreiben Sie hier Ihre Problemstellung..."></textarea>
         
+        <div class="hko-check-container">
+            <button class="btn-check" onclick="checkProblem()">HKO Check</button>
+            <span class="check-explanation">
+                <strong>Was passiert hier?</strong> Der Check prüft Ihre Eingabe auf zentrale Merkmale der Handlungskompetenzorientierung: ICH-Perspektive, ergebnisoffene Fragestellung und angemessene Komplexität.
+            </span>
+        </div>
+
         <div id="feedback" class="feedback-box">
-            <strong>HKO-Check: 3 Tipps zur Verbesserung</strong>
+            <strong>HKO-Check Ergebnisse:</strong>
             <ul id="feedback-list"></ul>
         </div>
 
@@ -64,73 +80,33 @@
         <p class="sprachmodi-list" id="display-sprachmodi"></p>
         
         <h3>Eigene Sprachmodi / Ergänzungen</h3>
-        <textarea id="user-sprachmodi" placeholder="Welche sprachlichen Handlungen sind konkret geplant?"></textarea>
+        <textarea id="user-sprachmodi" placeholder="Welche sprachlichen Handlungen planen Sie?"></textarea>
 
         <div class="footer-btns">
-            <button class="btn-main" onclick="generatePDF()">Als PDF speichern</button>
+            <button class="btn-pdf" onclick="generatePDF()">Als PDF speichern</button>
         </div>
     </div>
 </div>
 
 <script>
     const themesData = {
-        1: {
-            title: "Thema 1: Ins Berufsleben einsteigen",
-            leitidee: "Der Beginn meiner beruflichen Grundbildung bedeutet mehr als der Start einer Ausbildung, er ist der Übergang in eine neue Lebensphase. Ich begegne neuen Anforderungen, Regeln und Kommunikationsformen.",
-            aiProblem: "Ich starte meine Lehre und erhalte meinen ersten Vertrag. Was passiert, wenn ich krank werde? An wen muss ich mich im Betrieb wenden und welche Rechte habe ich?",
-            sprachmodi: "Rezeption schriftlich/bildlich/mündlich, Interaktion & Kollaboration digital."
-        },
-        2: {
-            title: "Thema 2: Bewusst konsumieren und handeln",
-            leitidee: "Mein Konsumverhalten steht in engem Zusammenhang mit meiner finanziellen Situation, den wirtschaftlichen Abläufen und den ökologischen Folgen.",
-            aiProblem: "Ich möchte ein neues Smartphone kaufen, habe aber nur wenig Geld gespart. Soll ich ein Abo mit Ratenzahlung wählen? Welche Kostenfallen lauern da?",
-            sprachmodi: "Rezeption audiovisuell, Produktion mündlich (Meinung äussern, Argumentieren)."
-        },
-        3: {
-            title: "Thema 3: Sicherheit und Gesundheit",
-            leitidee: "Sicherheit beginnt mit dem Erkennen von Risiken. Ich reflektiere, wie gesellschaftliche Erwartungen mein Wohlbefinden und meine Identität beeinflussen.",
-            aiProblem: "In meinem Betrieb wird die Sicherheitskleidung oft als uncool empfunden. Wie reagiere ich, wenn Kollegen mich drängen, die Regeln auch zu ignorieren?",
-            sprachmodi: "Interaktion & Kollaboration mündlich, Produktion schriftlich & bildlich."
-        },
-        4: {
-            title: "Thema 4: Medien und digitale Welt",
-            leitidee: "Digitale Werkzeuge und KI gehören zu meinem Alltag. Ich lerne, Programme sinnvoll zu nutzen, um Informationen zu finden und meine Arbeit zu organisieren.",
-            aiProblem: "Ich nutze KI, um meine Hausaufgaben schneller zu erledigen. Wie stelle ich sicher, dass die Fakten stimmen und ich nicht einfach falsche Informationen übernehme?",
-            sprachmodi: "Interaktion & Kollaboration digital, schriftlich und mündlich."
-        },
-        5: {
-            title: "Thema 5: Meinung bilden und mitgestalten",
-            leitidee: "Politische Entscheidungen betreffen meinen Alltag. Ich lerne meine politischen Rechte kennen und erfahre, wie ich mich selbst einbringen kann.",
-            aiProblem: "In meiner Gemeinde soll der Jugendtreff geschlossen werden. Wie kann ich meine Meinung wirksam vertreten und andere zur Mitwirkung motivieren?",
-            sprachmodi: "Rezeption mündlich, Produktion multimedial (Content erstellen)."
-        },
-        6: {
-            title: "Thema 6: Verträge verstehen - fair handeln",
-            leitidee: "Ich bewege mich in einem Alltag, der durch Regeln und rechtliche Grundlagen geprägt ist. Ich lerne, einfache Verträge (Kauf, Miete) zu verstehen.",
-            aiProblem: "Ich habe online ein Abo abgeschlossen, das ich nicht mehr will. Was steht im Kleingedruckten zu Fristen und wie formuliere ich eine faire Absage?",
-            sprachmodi: "Produktion schriftlich, bildlich und mündlich."
-        },
-        7: {
-            title: "Thema 7: Arbeit und Zukunft",
-            leitidee: "Mein Leben geht nach der Lehre weiter. Ich plane meine nächsten Schritte bewusst, von der Bewerbung bis zur finanziellen Verantwortung (Steuern).",
-            aiProblem: "Meine Lehre endet bald. Was möchte ich als Nächstes tun? Wie erstelle ich ein modernes Bewerbungsdossier und welche Weiterbildungen machen Sinn?",
-            sprachmodi: "Rezeption schriftlich/bildlich, Interaktion & Kollaboration mündlich/schriftlich."
-        },
-        8: {
-            title: "Thema 8: Kultur und Kunst",
-            leitidee: "Ich gestalte Kultur mit und mache gesellschaftliche Themen sichtbar. Ich lerne, kulturelle Ausdrucksformen zu analysieren und kreativ darauf zu reagieren.",
-            aiProblem: "Ein aktueller Trend auf Social Media gefällt mir nicht. Wie kann ich mit einem kreativen Beitrag (z.B. Meme oder Video) meine Sichtweise zeigen?",
-            sprachmodi: "Rezeption audiovisuell/mündlich, Produktion multimedial."
-        }
+        1: { title: "1. Berufsleben", color: "#2E5984", leitidee: "Der Beginn meiner beruflichen Grundbildung bedeutet mehr als der Start einer Ausbildung, er ist der Übergang in eine neue Lebensphase.", aiProblem: "Ich starte meine Lehre und erhalte den ersten Vertrag. Was passiert bei Krankheit? An wen wende ich mich?", sprachmodi: "Rezeption schriftlich/bildlich/mündlich, I&K digital." },
+        2: { title: "2. Konsum", color: "#27ae60", leitidee: "Mein Konsumverhalten steht in engem Zusammenhang mit meiner finanziellen Situation und den ökologischen Folgen.", aiProblem: "Ich möchte ein neues Smartphone, habe aber kaum Ersparnisse. Ratenzahlung oder sparen?", sprachmodi: "Rezeption AV, Produktion mündlich (Argumentieren)." },
+        3: { title: "3. Sicherheit", color: "#d35400", leitidee: "Sicherheit beginnt mit dem Erkennen von Risiken und der Fähigkeit, diese zu kommunizieren.", aiProblem: "Ein Kollege trägt die Schutzausrüstung nicht. Wie reagiere ich professionell, ohne die Beziehung zu gefährden?", sprachmodi: "I&K mündlich, Produktion schriftlich/bildlich." },
+        4: { title: "4. Digitale Welt", color: "#8e44ad", leitidee: "Digitale Werkzeuge und KI gehören zum Alltag. Ich nutze sie sinnvoll, um meine Arbeit zu organisieren.", aiProblem: "Ich nutze KI für einen Bericht. Wie prüfe ich die Quellen, damit ich keine Falschinfos verbreite?", sprachmodi: "I&K digital, schriftlich und mündlich." },
+        5: { title: "5. Meinung bilden", color: "#c0392b", leitidee: "Politische Entscheidungen betreffen meinen Alltag. Ich lerne meine Rechte kennen und bringe mich ein.", aiProblem: "In meiner Gemeinde soll der Skatepark abgerissen werden. Wie organisiere ich digitalen Widerstand?", sprachmodi: "Rezeption mündlich, Produktion multimedial." },
+        6: { title: "6. Verträge", color: "#16a085", leitidee: "Ich bewege mich in einem Alltag, der durch Regeln und rechtliche Grundlagen geprägt ist.", aiProblem: "Ich habe ein Abo versehentlich abgeschlossen. Welche Rechte habe ich beim Widerruf?", sprachmodi: "Produktion schriftlich, bildlich und mündlich." },
+        7: { title: "7. Arbeit & Zukunft", color: "#f39c12", leitidee: "Mein Leben geht nach der Lehre weiter. Ich plane meine nächsten Schritte und verstehe meine Pflichten.", aiProblem: "Meine Lehre endet. Wie erstelle ich ein Dossier, das meine praktischen Kompetenzen hervorhebt?", sprachmodi: "Rezeption schr/bild, I&K mündlich/schriftlich." },
+        8: { title: "8. Kultur & Kunst", color: "#e84393", leitidee: "Ich gestalte Kultur mit und mache gesellschaftliche Themen sichtbar.", aiProblem: "Ein Songtext beleidigt meine Werte. Wie drücke ich meine Kritik kreativ (z.B. Video/Meme) aus?", sprachmodi: "Rezeption AV/mündlich, Produktion multimedial." }
     };
 
     let currentId = null;
 
-    // Buttons initialisieren
     const btnContainer = document.getElementById('theme-buttons');
     for (let id in themesData) {
         let btn = document.createElement('button');
         btn.className = 'btn-theme';
+        btn.style.backgroundColor = themesData[id].color;
         btn.innerText = themesData[id].title;
         btn.onclick = () => showTheme(id, btn);
         btnContainer.appendChild(btn);
@@ -140,47 +116,53 @@
         currentId = id;
         const theme = themesData[id];
         
-        // UI Updates
         document.querySelectorAll('.btn-theme').forEach(b => b.classList.remove('active'));
         element.classList.add('active');
         
+        // Hintergrundfarbe des Hauptcontainers dezent anpassen
+        document.getElementById('main-container').style.backgroundColor = theme.color + "10"; // 10 ist Transparenz
+        
+        const content = document.getElementById('theme-content');
+        content.style.display = 'block';
+        content.style.borderColor = theme.color;
+        
         document.getElementById('display-title').innerText = theme.title;
+        document.getElementById('display-title').style.color = theme.color;
         document.getElementById('display-leitidee').innerText = theme.leitidee;
         document.getElementById('ai-suggestion').innerText = theme.aiProblem;
         document.getElementById('display-sprachmodi').innerText = theme.sprachmodi;
-        document.getElementById('theme-content').style.display = 'block';
         
-        // Reset Inputs
         document.getElementById('user-problem').value = '';
         document.getElementById('user-sprachmodi').value = '';
         document.getElementById('feedback').style.display = 'none';
         
-        window.scrollTo({ top: document.getElementById('theme-content').offsetTop - 20, behavior: 'smooth' });
+        window.scrollTo({ top: content.offsetTop - 50, behavior: 'smooth' });
     }
 
     function checkProblem() {
-        const input = document.getElementById('user-problem').value;
+        const input = document.getElementById('user-problem').value.trim();
         const feedbackList = document.getElementById('feedback-list');
         const feedbackBox = document.getElementById('feedback');
         
-        if (input.trim().length < 5) {
-            feedbackBox.style.display = 'none';
+        if (input.length < 5) {
+            alert("Bitte geben Sie zuerst eine Problemstellung ein.");
             return;
         }
 
         feedbackBox.style.display = 'block';
         let tips = [];
 
+        // HKO Kriterien Abgleich
         if (!input.toLowerCase().includes("ich")) {
-            tips.push("<strong>Perspektive:</strong> Formulieren Sie aus der 'ICH-Perspektive', um die Problemstellung realitätsnah für Lernende zu machen.");
+            tips.push("<strong>ICH-Perspektive:</strong> Die Problemstellung sollte aus der Sicht der Lernenden formuliert sein (z.B. 'Ich möchte...'), um die Relevanz zu erhöhen[cite: 74, 83].");
         }
         if (!input.includes("?")) {
-            tips.push("<strong>Offenheit:</strong> Nutzen Sie eine offene Fragestellung, die zum Handeln, Entscheiden oder Vergleichen zwingt.");
+            tips.push("<strong>Ergebnisoffenheit:</strong> Nutzen Sie eine offene Frage, die zum Vergleichen oder Beurteilen zwingt, statt nur Wissen abzufragen[cite: 77, 85].");
         }
-        if (input.length < 50) {
-            tips.push("<strong>Komplexität:</strong> Fügen Sie einen kurzen Kontext hinzu (Situation), damit es keine reine Wissensabfrage wird.");
+        if (input.length < 60) {
+            tips.push("<strong>Kontext & Komplexität:</strong> Beschreiben Sie die Situation etwas genauer. Eine gute Aufgabe braucht eine gewisse Herausforderung und Kontext[cite: 75, 86].");
         } else {
-            tips.push("<strong>Ressourcen:</strong> Überlegen Sie, welche Hilfsmittel (Gesetze, KI, Budgetvorlagen) die Lernenden zur Lösung brauchen.");
+            tips.push("<strong>Check:</strong> Die Länge ist gut. Prüfen Sie nun, ob die Lösung wirklich Ressourcen (z.B. Gesetz, KI, Experten) erfordert[cite: 76, 87].");
         }
 
         feedbackList.innerHTML = tips.slice(0,3).map(t => `<li>${t}</li>`).join('');
@@ -192,37 +174,21 @@
         const theme = themesData[currentId];
         
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.text("HKO Lektionsplanung (EBA)", 20, 20);
-        
-        doc.setFontSize(14);
-        doc.text(theme.title, 20, 35);
-        
-        doc.setFontSize(11);
+        doc.text("Lektionsplanung ABU EBA (HKO)", 20, 20);
+        doc.setFontSize(10);
+        doc.text(`Thema: ${theme.title}`, 20, 30);
         doc.setFont("helvetica", "normal");
-        doc.text("Leitidee:", 20, 45);
-        let splitLeitidee = doc.splitTextToSize(theme.leitidee, 170);
-        doc.text(splitLeitidee, 20, 50);
         
-        let yPos = 55 + (splitLeitidee.length * 5);
+        doc.text("Leitidee:", 20, 40);
+        doc.text(doc.splitTextToSize(theme.leitidee, 170), 20, 45);
         
-        doc.setFont("helvetica", "bold");
-        doc.text("Eigene Problemstellung:", 20, yPos);
-        doc.setFont("helvetica", "normal");
-        const userProb = document.getElementById('user-problem').value || "Keine Eingabe";
-        let splitProb = doc.splitTextToSize(userProb, 170);
-        doc.text(splitProb, 20, yPos + 5);
+        doc.text("Problemstellung:", 20, 70);
+        doc.text(doc.splitTextToSize(document.getElementById('user-problem').value, 170), 20, 75);
         
-        yPos += 15 + (splitProb.length * 5);
+        doc.text("Sprachmodi:", 20, 110);
+        doc.text(doc.splitTextToSize(document.getElementById('user-sprachmodi').value, 170), 20, 115);
         
-        doc.setFont("helvetica", "bold");
-        doc.text("Geplante Sprachmodi:", 20, yPos);
-        doc.setFont("helvetica", "normal");
-        const userSprach = document.getElementById('user-sprachmodi').value || "Keine Eingabe";
-        let splitSprach = doc.splitTextToSize(userSprach, 170);
-        doc.text(splitSprach, 20, yPos + 5);
-        
-        doc.save(`ABU_Planung_Thema_${currentId}.pdf`);
+        doc.save(`HKU_Planung_${theme.title.replace(".","")}.pdf`);
     }
 </script>
 
