@@ -3,206 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profi-Planer ABU EBA HKO 2030</title>
+    <title>ABU EBA HKO-Planer 2030 (Vollversion)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        :root { --primary-dark: #2c3e50; --accent: #3498db; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: #eef2f3; color: #333; }
-        .container { max-width: 1100px; margin: auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: var(--primary-dark); border-bottom: 4px solid var(--accent); padding-bottom: 15px; }
+        :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; line-height: 1.6; margin: 0; padding: 20px; background-color: var(--bg); color: #333; }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         
-        .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .btn-theme { padding: 18px; border: none; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; color: white; font-weight: bold; text-align: left; position: relative; overflow: hidden; }
-        .btn-theme:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); filter: brightness(1.1); }
-        .btn-theme.active { ring: 4px solid #333; outline: 3px solid white; outline-offset: -6px; }
+        h1 { text-align: center; color: var(--primary); border-bottom: 3px solid var(--accent); padding-bottom: 10px; }
+        .intro { text-align: center; color: #666; margin-bottom: 30px; font-size: 0.9em; }
 
-        .content-area { display: none; padding: 30px; border-radius: 12px; margin-top: 25px; animation: slideUp 0.4s ease-out; color: white; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* Themen-Buttons Grid */
+        .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-bottom: 30px; }
+        .btn-theme { padding: 15px; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; color: white; font-weight: 600; text-align: left; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-theme:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .btn-theme.active { outline: 3px solid #333; outline-offset: 2px; transform: scale(1.02); }
 
-        .info-card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        h2, h3 { margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 8px; }
+        /* Content Bereich */
+        .content-page { display: none; padding: 30px; border-radius: 12px; margin-top: 20px; animation: fadeIn 0.5s ease; color: white; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        textarea { width: 100%; height: 130px; padding: 15px; border-radius: 8px; border: none; font-size: 1rem; margin-top: 10px; background: #fff; color: #222; }
+        .info-box { background: rgba(255, 255, 255, 0.15); border-left: 5px solid white; padding: 20px; margin: 15px 0; border-radius: 5px; backdrop-filter: blur(5px); }
+        h3 { border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 5px; margin-top: 25px; }
+
+        /* Interaktive Elemente */
+        textarea { width: 100%; height: 120px; margin-top: 10px; padding: 12px; border-radius: 8px; border: none; font-size: 1em; background: rgba(255,255,255,0.95); color: #333; }
         
-        .action-zone { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .feedback-panel { background: #fff; color: #333; padding: 20px; border-radius: 10px; border-left: 8px solid #f1c40f; display: none; }
-        .skizze-panel { background: #f9f9f9; color: #333; padding: 20px; border-radius: 10px; border-left: 8px solid #27ae60; display: none; grid-column: span 2; margin-top: 20px; }
-
-        .btn-main { padding: 12px 25px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-check { background: #f1c40f; color: #222; }
+        .button-group { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .btn-action { padding: 12px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-check { background: #f1c40f; color: #333; }
         .btn-skizze { background: #27ae60; color: white; }
-        .btn-pdf { background: #2c3e50; color: white; margin-top: 20px; }
+        .btn-pdf { background: #333; color: white; }
 
-        .step-box { border-bottom: 1px solid #ddd; padding: 10px 0; }
-        .step-title { font-weight: bold; color: #27ae60; text-transform: uppercase; font-size: 0.85em; }
+        /* Ergebnis-Panels */
+        .panel { background: white; color: #333; padding: 20px; border-radius: 8px; margin-top: 15px; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .hk-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+        .hk-tag { display: inline-block; background: #e8f4fd; color: #2980b9; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>ABU EBA Planer 2030+</h1>
-    <p style="text-align: center; color: #666;">Basierend auf dem Schullehrplan Kanton Zürich & HKO-Prinzipien</p>
+    <h1>ABU EBA Lektionsplaner (HKO 2030)</h1>
+    <p class="intro">Wählen Sie ein Thema aus dem Schullehrplan Kanton Zürich aus. Alle Inhalte basieren auf der neuesten Reform.</p>
     
     <div class="theme-grid" id="theme-buttons"></div>
 
-    <div id="main-content" class="content-area">
-        <h2 id="title"></h2>
+    <div id="content-area" class="content-page">
+        <h2 id="display-title"></h2>
         
-        <div class="info-card">
-            <h3>Leitidee (Erweitert)</h3>
-            <p id="leitidee"></p>
+        <div class="info-box">
+            <strong>Detaillierte Leitidee:</strong><br>
+            <span id="display-leitidee"></span>
         </div>
 
-        <div class="info-card">
-            <h3>Detaillierter HKO-Szenariovorschlag</h3>
-            <p id="scenario-text" style="font-style: italic; font-size: 1.1em;"></p>
-            <button class="btn-main" style="background: rgba(255,255,255,0.2); font-size: 0.8em;" onclick="refreshScenario()">Neuen Vorschlag generieren ↻</button>
-        </div>
-
-        <h3>Eigene Problemstellung präzisieren</h3>
-        <textarea id="user-input" placeholder="Formulieren Sie hier Ihre komplexe Problemstellung aus der Ich-Perspektive..."></textarea>
-
-        <div class="action-zone">
-            <div>
-                <button class="btn-main btn-check" onclick="analyzeHKO()">HKO-Tiefencheck & Produkte</button>
-                <div id="feedback" class="feedback-panel"></div>
-            </div>
-            <div>
-                <button class="btn-main btn-skizze" onclick="generateSkizze()">Unterrichtsskizze (3-6 Lekt.) erstellen</button>
+        <div class="info-box" style="background: rgba(0,0,0,0.1);">
+            <strong>HKO-Szenariovorschlag (ausführlich):</strong><br>
+            <em id="display-scenario"></em>
+            <div style="margin-top:10px;">
+                <button onclick="refreshScenario()" style="cursor:pointer; background:none; border:1px solid white; color:white; padding:4px 8px; border-radius:4px; font-size:0.8em;">Anderes Szenario laden ↻</button>
             </div>
         </div>
 
-        <div id="skizze-container" class="skizze-panel"></div>
+        <h3>Eigene Problemstellung formulieren</h3>
+        <textarea id="user-problem" placeholder="Beschreiben Sie hier Ihre Problemstellung aus der Ich-Perspektive..."></textarea>
 
-        <button class="btn-main btn-pdf" onclick="saveAsPDF()">Komplette Planung als PDF exportieren</button>
+        <div class="button-group">
+            <button class="btn-action btn-check" onclick="runHKOCheck()">HKO Tiefen-Check</button>
+            <button class="btn-action btn-skizze" onclick="generateSkizze()">Unterrichtsskizze (3-6 Lekt.)</button>
+            <button class="btn-action btn-pdf" onclick="exportPDF()">PDF Export</button>
+        </div>
+
+        <div id="feedback-panel" class="panel"></div>
+        <div id="skizze-panel" class="panel"></div>
     </div>
 </div>
 
 <script>
-    const themes = {
+    const themesData = {
         1: {
             title: "1. Ins Berufsleben einsteigen",
-            color: "#2980b9",
-            leitidee: "Übergang in eine neue Lebensphase. Anforderungen des Lehrbetriebs und der Berufsfachschule verstehen. Kommunikationsformen und Verhaltensregeln im Team beherrschen.",
+            color: "#2E5984",
+            leitidee: "Beginn der Ausbildung als Übergang in eine neue Lebensphase. Anforderungen des Lehrbetriebs, Rechte und Pflichten im Lehrvertrag sowie professionelle Kommunikation im Team stehen im Fokus.",
             scenarios: [
-                "Ich habe meine erste Woche im Betrieb hinter mir. Gestern gab es ein Missverständnis mit meinem Berufsbildner wegen einer Verspätung. Wie kommuniziere ich professionell, entschuldige mich korrekt und stelle sicher, dass meine Zuverlässigkeit nicht infrage gestellt wird?",
-                "Mein Lehrvertrag enthält Klauseln zu Überstunden und Berufsschulbesuch, die ich nicht ganz verstehe. Ich möchte meine Rechte kennen, ohne beim Chef als 'schwierig' zu gelten. Wie bereite ich ein klärendes Gespräch vor?"
+                "Ich habe meine erste Woche im Betrieb hinter mir und merke, dass ich mich unsicher fühle, wenn ich Aufträge nicht sofort verstehe. Wie kommuniziere ich meine Lernbedarfe bei meinem Berufsbildner, ohne unkompetent zu wirken?",
+                "Ich habe im Betrieb miterlebt, wie ein Arbeitskollege über einen anderen lästert. Ich fühle mich unwohl dabei. Wie positioniere ich mich im Team und trage zu einer professionellen Arbeitsatmosphäre bei?"
             ]
         },
         2: {
             title: "2. Bewusst konsumieren und handeln",
             color: "#27ae60",
-            leitidee: "Zusammenhang zwischen Konsum, Finanzen und ökologischen Folgen. Budgetplanung und Vermeidung von Schuldenfallen (z.B. Kleinkredite, Leasing).",
+            leitidee: "Konsumverhalten im Kontext der eigenen Finanzen, wirtschaftlicher Abläufe und ökologischer Folgen reflektieren. Budgetplanung, Vermeidung von Schuldenfallen und nachhaltiges Handeln.",
             scenarios: [
-                "Ich möchte unbedingt das neue iPhone, aber mein Lehrlingslohn reicht nicht aus. Ein Anbieter lockt mit '0% Finanzierung'. Ich analysiere mein Budget für die nächsten 12 Monate: Kann ich mir das wirklich leisten oder gerate ich in eine Schuldenfalle?",
-                "Ich stelle fest, dass mein täglicher Coffee-to-go und das Mittagessen auswärts monatlich 300 CHF kosten. Ich suche nach nachhaltigen und günstigen Alternativen, um am Ende des Jahres eine Reise finanzieren zu können. Wie erstelle ich einen Sparplan?"
+                "Ich möchte mir ein Auto leasen, sobald ich 18 bin. Meine Freunde sagen, das sei kein Problem. Ich erstelle eine Vollkostenrechnung: Was kostet mich das Auto wirklich (Versicherung, Benzin, Service) und wie beeinflusst das mein Budget für die nächsten zwei Jahre?",
+                "Ich bemerke, dass ich sehr viel Kleidung online bestelle und oft Dinge zurückschicke. Ich untersuche die ökologischen Folgen und die Arbeitsbedingungen in der Textilindustrie. Welche nachhaltigen Alternativen gibt es in meiner Region?"
+            ]
+        },
+        3: {
+            title: "3. Sicherheit und Gesundheit",
+            color: "#d35400",
+            leitidee: "Risiken im Alltag und Beruf erkennen, kommunizieren und minimieren. Psychische Gesundheit, Unfallverhütung und der Umgang mit Stress/Leistungsdruck.",
+            scenarios: [
+                "In meinem Betrieb wird unter Zeitdruck oft auf Gehörschutz verzichtet, weil man sonst die Anweisungen nicht hört. Ich analysiere das Risiko für meine Gesundheit: Wie kann ich das Problem beim Sicherheitsbeauftragten ansprechen, ohne als 'Besserwisser' dazustehen?",
+                "Ich fühle mich durch die Doppelbelastung Betrieb/Schule extrem gestresst und schlafe schlecht. Ich erstelle eine Strategie zur Stressbewältigung: Welche Ressourcen habe ich und wo kann ich mir professionelle Hilfe suchen?"
+            ]
+        },
+        4: {
+            title: "4. Medien und digitale Welt",
+            color: "#8e44ad",
+            leitidee: "KI und digitale Werkzeuge sicher nutzen. Informationsbeschaffung reflektieren, Datenschutz wahren und die eigene digitale Identität (Social Media) kritisch bewerten.",
+            scenarios: [
+                "Ich nutze eine KI, um eine Zusammenfassung für die Schule zu schreiben. Dabei stelle ich fest, dass die KI Fakten erfindet. Wie verifiziere ich Quellen im Internet und wie setze ich KI-Tools verantwortungsvoll ein, ohne gegen Urheberrechte zu verstossen?",
+                "Ein Foto von mir auf einer Party wird ungefragt in einer WhatsApp-Gruppe verbreitet. Ich fühle mich in meiner Privatsphäre verletzt. Welche rechtlichen Schritte kann ich einleiten und wie schütze ich meine Daten zukünftig besser?"
+            ]
+        },
+        5: {
+            title: "5. Meinung bilden und mitgestalten",
+            color: "#c0392b",
+            leitidee: "Politische Prozesse verstehen und partizipieren. Rechte und Pflichten als Bürger/in wahrnehmen, Medienberichterstattung hinterfragen und eigene Anliegen demokratisch vertreten.",
+            scenarios: [
+                "In meiner Gemeinde soll der Skaterpark durch ein Parkhaus ersetzt werden. Ich bin dagegen. Welche demokratischen Instrumente (Petition, Brief an Gemeinderat, etc.) kann ich nutzen, um meine Meinung wirksam zu vertreten?",
+                "Es stehen Wahlen an. Ich bin überflutet von Wahlplakaten und Social Media Posts. Wie bilde ich mir eine eigene Meinung, die auf Fakten basiert, und wie erkenne ich populistische Strategien?"
             ]
         },
         6: {
             title: "6. Verträge verstehen - fair handeln",
             color: "#16a085",
-            leitidee: "Rechtliche Grundlagen im Alltag (Kauf, Miete, Arbeit). Formvorschriften und Rechtsfolgen von Vertragsverletzungen erkennen und handeln.",
+            leitidee: "Rechtliche Grundlagen des Alltags (Kauf, Miete, Abo). Verträge analysieren, Fallstricke im Kleingedruckten finden und bei Vertragsverletzungen korrekt reagieren.",
             scenarios: [
-                "Ich habe online ein Fitness-Abo abgeschlossen, das ich nun wegen Umzug kündigen will. Das Studio verweigert die Kündigung und pocht auf das Kleingedruckte. Wie prüfe ich die AGB rechtlich und verfasse einen eingeschriebenen Brief, um aus dem Vertrag zu kommen?",
-                "Ich möchte mit Freunden eine WG gründen. Der Mietvertrag ist solidarisch. Was bedeutet das für mich, wenn ein Kollege seine Miete nicht zahlt? Ich erstelle eine Checkliste für unsere interne WG-Vereinbarung."
+                "Ich habe online ein Abo abgeschlossen, das sich automatisch verlängert hat, obwohl ich dachte, es sei ein Gratismonat. Wie verfasse ich ein rechtlich korrektes Kündigungsschreiben und worauf muss ich beim nächsten Mal im Kleingedruckten achten?",
+                "Ich möchte von zu Hause ausziehen und mit einer Freundin eine WG gründen. Wir haben den Mietvertrag vor uns liegen. Was bedeutet 'Solidarhaftung' für mich und wie erstellen wir einen fairen Untermietvertrag?"
+            ]
+        },
+        7: {
+            title: "7. Arbeit und Zukunft",
+            color: "#f39c12",
+            leitidee: "Vorsorge, Versicherungen und Steuern nach der Lehre planen. Finanzielle Unabhängigkeit anstreben und die eigene berufliche Laufbahn aktiv gestalten.",
+            scenarios: [
+                "Ich erhalte meinen ersten vollen Lohn nach der Lehre. Plötzlich muss ich Steuern zahlen und meine Krankenkasse selbst finanzieren. Ich erstelle einen Finanzplan für mein erstes Berufsjahr: Was bleibt wirklich zum Leben übrig?",
+                "Ich möchte mich nach der EBA-Lehre für die EFZ-Lehre anmelden, habe aber Angst, dass meine Noten nicht reichen. Ich plane meine Weiterbildung: Welche Brückenangebote gibt es und wie bereite ich ein Motivationsschreiben vor?"
+            ]
+        },
+        8: {
+            title: "8. Kultur und Kunst",
+            color: "#e84393",
+            leitidee: "Kulturelle Ausdrucksformen erleben und bewerten. Gesellschaftliche Werte in Kunstwerken erkennen und den Einfluss von Kultur auf die eigene Identität reflektieren.",
+            scenarios: [
+                "Ein bekanntes Monument in meiner Stadt wird wegen rassistischer Hintergründe kritisiert. Wie diskutiere ich mit anderen über den Umgang mit Geschichte und Kunst im öffentlichen Raum?",
+                "Ich besuche eine Kunstausstellung, die mich provoziert. Ich versuche zu verstehen, was die Künstlerin damit aussagen will: Wie hängen meine persönlichen Werte mit meinem Kunstverständnis zusammen?"
             ]
         }
-        // Weitere Themen können nach gleichem Muster ergänzt werden
     };
 
-    let activeId = null;
+    let currentId = null;
 
-    // Initialisierung
-    const grid = document.getElementById('theme-buttons');
-    Object.keys(themes).forEach(id => {
-        const btn = document.createElement('button');
+    // Buttons generieren
+    const btnContainer = document.getElementById('theme-buttons');
+    Object.keys(themesData).forEach(id => {
+        let btn = document.createElement('button');
         btn.className = 'btn-theme';
-        btn.style.backgroundColor = themes[id].color;
-        btn.innerHTML = themes[id].title;
+        btn.style.backgroundColor = themesData[id].color;
+        btn.innerText = themesData[id].title;
         btn.onclick = () => selectTheme(id, btn);
-        grid.appendChild(btn);
+        btnContainer.appendChild(btn);
     });
 
-    function selectTheme(id, btn) {
-        activeId = id;
+    function selectTheme(id, element) {
+        currentId = id;
+        const theme = themesData[id];
         document.querySelectorAll('.btn-theme').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        element.classList.add('active');
         
-        const area = document.getElementById('main-content');
-        area.style.display = 'block';
-        area.style.backgroundColor = themes[id].color;
+        const content = document.getElementById('content-area');
+        content.style.display = 'block';
+        content.style.backgroundColor = theme.color;
         
-        document.getElementById('title').innerText = themes[id].title;
-        document.getElementById('leitidee').innerText = themes[id].leitidee;
+        document.getElementById('display-title').innerText = theme.title;
+        document.getElementById('display-leitidee').innerText = theme.leitidee;
         refreshScenario();
         
-        // Reset
-        document.getElementById('feedback').style.display = 'none';
-        document.getElementById('skizze-container').style.display = 'none';
-        document.getElementById('user-input').value = "";
+        document.getElementById('feedback-panel').style.display = 'none';
+        document.getElementById('skizze-panel').style.display = 'none';
+        document.getElementById('user-problem').value = '';
     }
 
     function refreshScenario() {
-        const scens = themes[activeId].scenarios;
-        const randomScen = scens[Math.floor(Math.random() * scens.length)];
-        document.getElementById('scenario-text').innerText = randomScen;
+        const scenarios = themesData[currentId].scenarios;
+        document.getElementById('display-scenario').innerText = scenarios[Math.floor(Math.random() * scenarios.length)];
     }
 
-    function analyzeHKO() {
-        const input = document.getElementById('user-input').value;
-        const feedback = document.getElementById('feedback');
+    function runHKOCheck() {
+        const input = document.getElementById('user-problem').value;
+        if(input.length < 10) { alert("Bitte Problemstellung beschreiben."); return; }
         
-        if(input.length < 10) { alert("Bitte formulieren Sie zuerst Ihre Problemstellung!"); return; }
+        const panel = document.getElementById('feedback-panel');
+        panel.style.display = 'block';
         
-        feedback.style.display = 'block';
-        let html = "<h4>HKO-Analyse-Ergebnis:</h4><ul>";
+        let feedback = "<h3>HKO-Analyse & Kompetenz-Check</h3>";
         
-        // Kriterienprüfung
-        if(!input.toLowerCase().includes("ich")) html += "<li>❌ <b>Perspektive:</b> Die 'Ich-Form' fehlt. Machen Sie die Lernenden zum Akteur.</li>";
-        else html += "<li>✅ <b>Perspektive:</b> Gute Personalisierung.</li>";
-        
-        if(!input.includes("?")) html += "<li>❌ <b>Offenheit:</b> Keine Frageform gefunden. HKO braucht eine Entscheidungssituation.</li>";
-        
-        if(input.length > 100) html += "<li>✅ <b>Komplexität:</b> Die Situation bietet genügend Tiefe für eine Ressourcenrecherche.</li>";
-        else html += "<li>⚠️ <b>Komplexität:</b> Erweitern Sie die Situation um ein Hindernis oder einen Konflikt.</li>";
+        // Prüfung auf Ich-Perspektive (Folien S. 17)
+        if(!input.toLowerCase().includes("ich")) {
+            feedback += `<div class="hk-item">❌ <b>Perspektive:</b> Die Situation ist noch zu abstrakt. Formulieren Sie aus der <b>Ich-Perspektive</b> des Lernenden (Handlungsbezug).</div>`;
+        } else {
+            feedback += `<div class="hk-item">✅ <b>Perspektive:</b> Die Ich-Perspektive ist vorhanden. Der Lernende ist Akteur.</div>`;
+        }
 
-        html += "</ul><h4>Vorgeschlagene Handlungsprodukte:</h4>";
-        html += "<ul><li><b>Präsentation:</b> Ein Pitch vor der Geschäftsleitung / Klasse.</li>";
-        html += "<li><b>Dokument:</b> Ein begründeter Beschwerdebrief oder eine Budgettabelle.</li>";
-        html += "<li><b>Digital:</b> Ein Erklärvideo (TikTok-Style) für andere Lernende.</li></ul>";
+        // Prüfung auf Offenheit (Folien S. 13)
+        if(!input.includes("?")) {
+            feedback += `<div class="hk-item">⚠️ <b>Offenheit:</b> Es fehlt eine klare Fragestellung oder Entscheidungssituation. HKO benötigt eine Herausforderung ohne Standardlösung.</div>`;
+        }
+
+        feedback += `<h4>Passende Schlüsselkompetenzen (SLP):</h4>`;
+        feedback += `<div class="hk-item"><span class="hk-tag">SK 5: Werte reflektieren</span><br>Lernende müssen ihre eigene Position klären und begründen.</div>`;
+        feedback += `<div class="hk-item"><span class="hk-tag">SK 9: Nachhaltig handeln</span><br>Die Folgen der Entscheidung für sich und die Umwelt werden abgeschätzt.</div>`;
         
-        feedback.innerHTML = html;
+        feedback += `<h4>Vorgeschlagene Handlungsprodukte (Sichtbarkeit):</h4>`;
+        feedback += `<ul><li><b>Schriftlich:</b> Ein begründeter Entscheidungsbrief oder ein Budgetplan.</li><li><b>Mündlich:</b> Ein Rollengespräch (z.B. mit dem Chef) aufnehmen.</li><li><b>Digital:</b> Ein 'How-to' Video für andere Lernende erstellen.</li></ul>`;
+        
+        panel.innerHTML = feedback;
     }
 
     function generateSkizze() {
-        const container = document.getElementById('skizze-container');
-        container.style.display = 'block';
+        const panel = document.getElementById('skizze-panel');
+        panel.style.display = 'block';
         
-        const plan = [
-            { s: "Informieren", t: "Ausgangslage analysieren: Was weiss ich bereits? Welche Infos fehlen mir zum Fall?" },
-            { s: "Planen", t: "Vorgehen strukturieren: Recherchequellen festlegen (Gesetzestexte, KI, Experten)." },
-            { s: "Entscheiden", t: "Lösungsweg wählen: Welche Option ist rechtlich/ethisch/finanziell am besten?" },
-            { s: "Ausführen", t: "Produkt erstellen: Entwurf des Briefs, der Tabelle oder des Videos." },
-            { s: "Kontrollieren", t: "Peer-Feedback: Gegenseitiges Prüfen der Ergebnisse anhand von Kriterien." },
-            { s: "Reflektieren", t: "Transfer: Was bedeutet das Erlernte für meinen echten Alltag?" }
+        let html = "<h3>Unterrichtsskizze: Die Vollständige Handlung (3-6 Lektionen)</h3>";
+        const schritte = [
+            { s: "1. Informieren", d: "Lernende analysieren die Problemstellung. Welche Informationen fehlen (Recht, Finanzen, Fachwissen)?" },
+            { s: "2. Planen", d: "Vorgehen strukturieren. Welche Ressourcen (Gesetze, Internet, Experten) werden genutzt?" },
+            { s: "3. Entscheiden", d: "Wahl des Lösungswegs. Welches Produkt soll erstellt werden?" },
+            { s: "4. Ausführen", d: "Erarbeitung des Handlungsprodukts (z.B. Brief, Video, Präsentation)." },
+            { s: "5. Kontrollieren", d: "Abgleich mit Kriterien: Erfüllt das Produkt die Anforderungen des Szenarios?" },
+            { s: "6. Reflektieren", d: "Transfer: Was habe ich für meinen echten Alltag gelernt? (Metakognition)" }
         ];
-
-        let html = "<h4>Unterrichtsskizze (Vollständige Handlung)</h4>";
-        plan.forEach(p => {
-            html += `<div class="step-box"><span class="step-title">${p.s}:</span><br>${p.t}</div>`;
+        
+        schritte.forEach(step => {
+            html += `<div style="margin-bottom:15px; border-left:3px solid #27ae60; padding-left:10px;">
+                        <b>${step.s}:</b><br><small>${step.d}</small>
+                     </div>`;
         });
-        container.innerHTML = html;
+        
+        panel.innerHTML = html;
+        window.scrollTo({ top: panel.offsetTop + 100, behavior: 'smooth' });
     }
 
-    function saveAsPDF() {
+    function exportPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.text("Planung: " + themes[activeId].title, 10, 10);
-        doc.text("Problemstellung:", 10, 20);
-        doc.text(doc.splitTextToSize(document.getElementById('user-input').value, 180), 10, 30);
-        // ... weitere Inhalte für PDF ...
-        doc.save("ABU_EBA_Planung.pdf");
+        const theme = themesData[currentId];
+        
+        doc.setFontSize(18);
+        doc.text("HKO-Unterrichtsplanung ABU EBA", 20, 20);
+        doc.setFontSize(12);
+        doc.text(`Thema: ${theme.title}`, 20, 35);
+        
+        doc.setFont("helvetica", "bold");
+        doc.text("Problemstellung:", 20, 50);
+        doc.setFont("helvetica", "normal");
+        const problem = document.getElementById('user-problem').value || "Keine Eingabe";
+        doc.text(doc.splitTextToSize(problem, 170), 20, 55);
+        
+        doc.text("--- Generiert mit dem ABU HKO Planer 2030 ---", 20, 280);
+        doc.save(`Planung_ABU_${currentId}.pdf`);
     }
 </script>
+
 </body>
 </html>
